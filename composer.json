@@ -1,0 +1,25 @@
+{
+    "name": "enjoys/widget-yametrika",
+    "description": "Widget Yandex.Metrika for EnjoysCMS/Admin",
+    "type": "enjoyscms-module",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Enjoys\\WidgetYametrika\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Enjoys",
+            "email": "deadly.info@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "enjoyscms/admin": "^4.2"
+    },
+    "scripts": {
+        "post-install-cmd": "EnjoysCMS\\WidgetYaMetrika\\Composer::assetsInstall",
+        "post-update-cmd": "EnjoysCMS\\WidgetYaMetrika\\Composer::assetsInstall"
+    }
+}
