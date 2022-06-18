@@ -1,0 +1,7 @@
+EnjoysCMS\WidgetYaMetrika\LineMetrika:
+  name: &name Линейный график
+  options:
+    title: *name
+    yandex-counter-id:
+
+
