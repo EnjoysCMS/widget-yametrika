@@ -1,7 +1,8 @@
-EnjoysCMS\WidgetYaMetrika\LineMetrika:
-  name: &name Линейный график
+EnjoysCMS\WidgetYaMetrika\Widgets\Traffic:
+  name: &name Траффик
   options:
     title: *name
     yandex-counter-id:
+    cache: 1800
 
 

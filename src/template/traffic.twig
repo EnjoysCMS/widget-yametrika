@@ -1,0 +1,226 @@
+{% if error %}
+    <div class="h-100 border-dark border-1 border d-flex align-items-center justify-content-center">
+        <div class="h4 text-danger">{{ error|raw }}</div>
+    </div>
+{% else %}
+    {#    <!-- Resources --> #}
+    {#    <script src="//cdn.amcharts.com/lib/5/index.js"></script> #}
+    {#    <script src="//cdn.amcharts.com/lib/5/xy.js"></script> #}
+    {#    <script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script> #}
+
+    {#    <!-- Styles --> #}
+    {#    <style> #}
+    {#        #chartdiv { #}
+    {#            width: 100%; #}
+    {#            max-width: 100% #}
+    {#        } #}
+    {#    </style> #}
+
+
+    {#    <!-- Chart code --> #}
+    {#    <script> #}
+    {#        am5.ready(function() { #}
+
+    {# // Create root element #}
+    {# // https://www.amcharts.com/docs/v5/getting-started/#Root_element #}
+    {#            var root = am5.Root.new("chartdiv"); #}
+
+
+    {# // Set themes #}
+    {# // https://www.amcharts.com/docs/v5/concepts/themes/ #}
+    {#            root.setThemes([ #}
+    {#                am5themes_Animated.new(root) #}
+    {#            ]); #}
+
+
+    {# // Create chart #}
+    {# // https://www.amcharts.com/docs/v5/charts/xy-chart/ #}
+    {#            var chart = root.container.children.push(am5xy.XYChart.new(root, { #}
+    {#                layout: root.verticalLayout, #}
+    {#                panX: true, #}
+    {#                panY: true, #}
+    {#                wheelX: "panX", #}
+    {#                wheelY: "zoomX", #}
+    {#                pinchZoomX:true #}
+    {#            })); #}
+
+
+    {# // Add cursor #}
+    {# // https://www.amcharts.com/docs/v5/charts/xy-chart/cursor/ #}
+    {#            var cursor = chart.set("cursor", am5xy.XYCursor.new(root, { #}
+    {#                behavior: "none" #}
+    {#            })); #}
+    {#            cursor.lineY.set("visible", false); #}
+
+
+    {# // Create axes #}
+    {# // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/ #}
+    {#            var xAxis = chart.xAxes.push(am5xy.DateAxis.new(root, { #}
+    {#                maxDeviation: 0.2, #}
+    {#                baseInterval: { #}
+    {#                    timeUnit: "day", #}
+    {#                    count: 1 #}
+    {#                }, #}
+    {#                renderer: am5xy.AxisRendererX.new(root, {}), #}
+    {#                tooltip: am5.Tooltip.new(root, {}) #}
+    {#            })); #}
+
+    {#            var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, { #}
+    {#                renderer: am5xy.AxisRendererY.new(root, {}) #}
+    {#            })); #}
+
+
+    {#            let datas = {{ data|raw }}; #}
+
+    {#            let data = []; #}
+
+    {#            for (let i in datas.data) { #}
+    {#                data[i] = datas.data[i]['metrics']; #}
+    {#                let myDate = datas.data[i]['dimensions']['date']['name']; #}
+    {#                myDate = myDate.split("-"); #}
+    {#                let newDate = new Date( myDate[0], myDate[1] - 1, myDate[2]); #}
+    {#                data[i]['date'] = newDate.getTime(); #}
+    {#            } #}
+
+    {#            for (var k in datas.totals) { #}
+    {#                var series = chart.series.push(am5xy.LineSeries.new(root, { #}
+    {#                    name: k, #}
+    {#                    xAxis: xAxis, #}
+    {#                    yAxis: yAxis, #}
+    {#                    valueYField: k, #}
+    {#                    valueXField: "date", #}
+    {#                    tooltip: am5.Tooltip.new(root, { #}
+    {#                        labelText: "{valueY}" #}
+    {#                    }) #}
+    {#                })); #}
+    {#                series.appear(1000); #}
+    {#                series.data.setAll(data); #}
+    {#            } #}
+
+
+    {#            // Add legend #}
+    {#            var legend = chart.children.push(am5.Legend.new(root, {})); #}
+    {#            legend.data.setAll(chart.series.values); #}
+
+    {# // Make stuff animate on load #}
+    {# // https://www.amcharts.com/docs/v5/concepts/animations/ #}
+
+    {#            chart.appear(1000, 100); #}
+
+    {#        }); // end am5.ready() #}
+    {#    </script> #}
+
+    <script type="text/javascript" src="//www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+        let chartDiv = document.getElementById('chart_div');
+
+        chartDiv.classList.add('bg-danger');
+
+        fetch('{{ path('yametrika/visitors') }}', {
+            method: 'POST', mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            }, referrerPolicy: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify({
+                "wid": {{ widget.id }},
+            })
+        }).then(function (response) {
+
+
+
+            response.json().then(function (datas) {
+
+
+                google.charts.load('current', {'packages': ['line']});
+                google.charts.setOnLoadCallback(drawChart);
+
+
+
+                let labels = ['date'];
+                labels.push(...Object.keys(datas.totals));
+
+                let values = [];
+                for (let i in datas.data) {
+                    values[i] = [];
+                    values[i].push(datas.data[i]['dimensions']['date']['name']);
+                    for (let k in datas.data[i]['metrics']) {
+                        values[i].push(datas.data[i]['metrics'][k]);
+                    }
+                }
+
+                function drawChart() {
+                    var data = google.visualization.arrayToDataTable([
+                        labels,
+                        ...values
+                    ]);
+                    var options = {
+                        title: 'Посещаемость',
+                        curveType: 'function',
+                        legend: {position: 'bottom'}
+                    };
+
+                    var chart = new google.charts.Line(chartDiv);
+
+
+                    chart.draw(data, options);
+
+                    chartDiv.classList.remove('bg-danger');
+                }
+
+            })
+        });
+
+
+    </script>
+
+
+    <style>
+        #chart_div {
+            width: 100%;
+            max-width: 100%
+        }
+    </style>
+    <div class="card h-100 bg-gradient-light">
+        <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
+            <h3 class="card-title">
+                <i class="fas fa-map-marker-alt mr-1"></i>
+                Visitors
+            </h3>
+
+        </div>
+        <div class="card-body" id="chart_div">
+        </div>
+
+        <div class="card-footer bg-transparent">
+            <div class="row">
+                <div class="col-4 text-center">
+                    <div id="sparkline-1">
+                        <canvas width="100" height="62" style="width: 80px; height: 50px;"></canvas>
+                    </div>
+                    <div>Visitors</div>
+                </div>
+
+                <div class="col-4 text-center">
+                    <div id="sparkline-2">
+                        <canvas width="100" height="62" style="width: 80px; height: 50px;"></canvas>
+                    </div>
+                    <div>Online</div>
+                </div>
+
+                <div class="col-4 text-center">
+                    <div id="sparkline-3">
+                        <canvas width="100" height="62" style="width: 80px; height: 50px;"></canvas>
+                    </div>
+                    <div>Sales</div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <!-- HTML -->
+
+{% endif %}
