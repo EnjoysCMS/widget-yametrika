@@ -44,7 +44,7 @@ final class FetchData
                 $startDate ?? (new \DateTime())->modify('-30 days'),
                 $endDate ?? new \DateTime()
             )->formatData();
-            $this->cacher->set($cacheId, $data, $this->widget->getOptions()['cache'] ?? 60);
+            $this->cacher->set($cacheId, $data, $this->widget->getOptions()['cache'] ?? 0);
         }
 
         return $data;

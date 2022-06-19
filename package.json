@@ -1,4 +1,6 @@
 {
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "highcharts": "^10.1.0"
+  }
 }
