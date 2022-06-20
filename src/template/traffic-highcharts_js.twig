@@ -1,0 +1,168 @@
+{% if error %}
+    <div class="h-100 border-dark border-1 border d-flex align-items-center justify-content-center">
+        <div class="h4 text-danger">{{ error|raw }}</div>
+    </div>
+{% else %}
+
+    {% set containerId = 'container' ~ widget.id %}
+
+    {% do asset('js', [
+        'modules/widget-yametrika/node_modules/highcharts/highcharts.js',
+        'modules/widget-yametrika/node_modules/highcharts/modules/accessibility.js',
+        'modules/widget-yametrika/node_modules/highcharts/modules/exporting.js',
+    ]) %}
+
+
+    <div
+        class="card h-100 bg-{{ (widget.options['background-gradient'].value is same as('Yes')) ? 'gradient-' : '' }}{{ widget.options.background.value ?? 'transparent' }}">
+        <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
+            <h3 class="card-title">
+                {{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }}
+            </h3>
+
+        </div>
+        <div class="card-body" id="{{ containerId }}">
+            <div class="loading position-relative align-items-center justify-content-center" style="display: none">
+                <div class="fa-3x">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        controller = new AbortController();
+
+        container = document.getElementById('{{ containerId }}');
+        preloader = container.querySelector('.loading');
+        preloader.style.display = 'flex';
+
+        fetch('{{ path('yametrika/visitors') }}', {
+            method: 'POST', mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            }, referrerPolicy: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify({
+                "wid": {{ widget.id }},
+            })
+        })
+            .then(function (response) {
+                if (!response.ok){
+                    let err = response.clone().json().then(function (err) {
+                        console.log(err)
+                        return err;
+                    });
+                    response.reject(err)
+                }
+                return response.json();
+            })
+            .then(function (result) {
+                console.log(result);
+                let series = [];
+
+                for (let k in result.totals) {
+                    let index = series.push({'name': k, 'data': []});
+                    for (let i in result.data) {
+                        let date = result.data[i]['dimensions']['date']['name'].split("-");
+                        series[index - 1]['data'].push([
+                            (new Date(date[0], date[1] - 1, date[2])).getTime(),
+                            result.data[i]['metrics'][k]
+                        ]);
+                    }
+                }
+
+
+                Highcharts.chart('{{ containerId }}', {
+
+                    chart: {
+                        zoomType: 'x',
+                        backgroundColor: 'rgba(255, 255, 255, 0.0)'
+                    },
+
+                    title: null,
+
+
+                    xAxis: {
+                        type: 'datetime',
+                        title: {
+                            text: 'Date'
+                        },
+                        //categories: result.xAxis
+                        // tickInterval: 7 * 24 * 3600 * 1000, // one week
+                        tickWidth: 0,
+                        gridLineWidth: 1,
+                        labels: {
+                            align: 'left',
+                            x: 3,
+                            y: -3
+                        }
+                    },
+
+                    yAxis: [{ // left y axis
+                        title: {
+                            text: 'Количество'
+                        },
+                        labels: {
+                            align: 'left',
+                            x: 3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }, { // right y axis
+                        linkedTo: 0,
+                        gridLineWidth: 0,
+                        opposite: true,
+                        title: {
+                            text: null
+                        },
+                        labels: {
+                            align: 'right',
+                            x: -3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }],
+
+                    legend: {
+                        align: 'left',
+                        verticalAlign: 'top',
+                        borderWidth: 0
+                    },
+
+                    tooltip: {
+                        shared: true,
+                        crosshairs: true
+                    },
+
+                    plotOptions: {
+                        series: {
+                            cursor: 'pointer',
+                            className: 'popup-on-click',
+                            marker: {
+                                lineWidth: 1
+                            }
+                        }
+                    },
+
+                    series: series
+                });
+
+
+            })
+            .catch(function (err) {
+                container.appendChild(document.createTextNode(err));
+            })
+            .finally(function () {
+                preloader.style.display = 'none';
+            });
+
+
+    </script>
+
+{% endif %}

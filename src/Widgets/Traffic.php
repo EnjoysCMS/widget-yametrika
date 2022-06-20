@@ -13,7 +13,7 @@ final class Traffic extends YaMetrika
     public function view(): string
     {
 
-        return $this->twig->render('@metrika/traffic.twig', [
+        return $this->twig->render('@metrika/traffic-highcharts_js.twig', [
             'widget' => $this->widget,
         ]);
     }

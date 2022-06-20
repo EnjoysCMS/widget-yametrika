@@ -28,6 +28,7 @@ final class Controller extends BaseController
         $this->metrika = new FetchData($widget);
     }
 
+
     #[Route(
         path: '/yametrika/visitors',
         name: 'yametrika/visitors',
@@ -35,9 +36,17 @@ final class Controller extends BaseController
     )]
     public function getVisitors(\DateTime $startDate = null, \DateTime $endDate = null): ResponseInterface
     {
-        return $this->responseJson($this->metrika->getVisitors($startDate, $endDate));
+        try {
+            return $this->responseJson($this->metrika->getVisitors($startDate, $endDate));
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
     }
 
+    /**
+     * @throws \AXP\YaMetrika\Exception\FormatException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
     #[Route(
         path: '/yametrika/browsers',
         name: 'yametrika/browsers',
@@ -48,6 +57,10 @@ final class Controller extends BaseController
         \DateTime $endDate = null,
         int $limit = 10
     ): ResponseInterface {
-        return $this->responseJson($this->metrika->getBrowsers($startDate, $endDate, $limit));
+        try {
+            return $this->responseJson($this->metrika->getBrowsers($startDate, $endDate, $limit));
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
     }
 }

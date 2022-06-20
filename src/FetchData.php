@@ -7,8 +7,10 @@ namespace EnjoysCMS\WidgetYaMetrika;
 
 
 use AXP\YaMetrika\Client;
+use AXP\YaMetrika\Exception\FormatException;
 use EnjoysCMS\Core\Entities\Widget;
 use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 
 final class FetchData
 {
@@ -21,8 +23,10 @@ final class FetchData
             $_ENV['YA_METRIKA_TOKEN'] ?? throw new \InvalidArgumentException(
                 'Set in .env `YA_METRIKA_TOKEN`. See <a href="https://github.com/axp-dev/ya-metrika#Получение-токена">here</a>'
             ),
-            $this->widget->getOptions(
-            )['yandex-counter-id'] ?? $_ENV['YA_METRIKA_COUNTER_ID'] ?? throw new \InvalidArgumentException(
+            $this->widget->getOptions()['yandex-counter-id']['value']
+            ?? $this->widget->getOptions()['yandex-counter-id']
+            ?? $_ENV['YA_METRIKA_COUNTER_ID']
+            ?? throw new \InvalidArgumentException(
                 'Set counter id of yandex metrika in setting widget or in .env parameter `YA_METRIKA_COUNTER_ID`'
             )
         );
@@ -35,6 +39,10 @@ final class FetchData
         return md5(json_encode([$prefix, $this->widget->getOptions(), $this->widget->getId()]));
     }
 
+    /**
+     * @throws FormatException
+     * @throws InvalidArgumentException
+     */
     public function getVisitors(\DateTime $startDate = null, \DateTime $endDate = null)
     {
         $cacheId = $this->getCacheId('visitors');
@@ -50,6 +58,10 @@ final class FetchData
         return $data;
     }
 
+    /**
+     * @throws FormatException
+     * @throws InvalidArgumentException
+     */
     public function getBrowsers(\DateTime $startDate = null, \DateTime $endDate = null, int $limit = 10)
     {
         $cacheId = $this->getCacheId('browsers');

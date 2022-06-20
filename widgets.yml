@@ -4,5 +4,20 @@ EnjoysCMS\WidgetYaMetrika\Widgets\Traffic:
     title: *name
     yandex-counter-id:
     cache: 1800
-
+    chart:
+      value: 'highchart_js'
+      type: select
+      data: ['highchart_js', 'amcharts_js', 'google_charts']
+    background-gradient:
+      value: "Yes"
+      type: radio
+      data: [ "No", "Yes" ]
+    background:
+      value: 'transparent'
+      type: select
+      data: [ primary, secondary, success, danger, warning, info, light, dark, white, transparent ]
+    gs:
+      min-h: 15
+      min-w: 5
+      max-w: 12
 
