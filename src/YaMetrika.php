@@ -10,13 +10,17 @@ use EnjoysCMS\Core\Components\Widgets\AbstractWidgets;
 use EnjoysCMS\Core\Entities\Widget as Entity;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
+use Twig\Loader\LoaderInterface;
 
 abstract class YaMetrika extends AbstractWidgets
 {
+    protected LoaderInterface $twigLoader;
+
     public function __construct(ContainerInterface $container, Entity $widget)
     {
         parent::__construct($container, $widget);
-        $this->twig->getLoader()->addPath(__DIR__ . '/template', 'metrika');
+        $this->twigLoader = $this->twig->getLoader();
+        $this->twigLoader->addPath(__DIR__ . '/template', 'metrika');
     }
 
     public static function getWidgetDefinitionFile(): string

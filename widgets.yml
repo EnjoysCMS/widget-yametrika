@@ -5,9 +5,9 @@ EnjoysCMS\WidgetYaMetrika\Widgets\Traffic:
     yandex-counter-id:
     cache: 1800
     chart:
-      value: 'highchart_js'
+      value: 'highcharts_js'
       type: select
-      data: ['highchart_js', 'amcharts_js', 'google_charts']
+      data: ['highcharts_js', 'amcharts_js', 'google_charts']
     background-gradient:
       value: "Yes"
       type: radio

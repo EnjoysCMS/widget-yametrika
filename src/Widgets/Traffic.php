@@ -12,7 +12,12 @@ final class Traffic extends YaMetrika
 {
     public function view(): string
     {
-        return $this->twig->render('@metrika/traffic-highcharts_js.twig', [
+        $template = sprintf('@metrika/traffic-%s.twig', $this->widget->getOptions()['chart']['value'] ?? '');
+
+        if (!$this->twigLoader->exists($template)){
+            throw new \InvalidArgumentException(sprintf('%s not exist', $template));
+        }
+        return $this->twig->render($template, [
             'widget' => $this->widget,
         ]);
     }
