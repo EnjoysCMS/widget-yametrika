@@ -1,150 +1,139 @@
-{% if error %}
-    <div class="h-100 border-dark border-1 border d-flex align-items-center justify-content-center">
-        <div class="h4 text-danger">{{ error|raw }}</div>
-    </div>
-{% else %}
-
-    {% set containerId = 'container' ~ widget.id %}
+{% set containerId = 'container' ~ widget.id %}
 
     {% do asset('js', [
         'modules/widget-yametrika/assets/Utils.js',
     ]) %}
 
-    <!-- Resources -->
-    <script src="//cdn.amcharts.com/lib/5/index.js"></script>
-    <script src="//cdn.amcharts.com/lib/5/xy.js"></script>
-    <script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script>
-    <script src="//cdn.amcharts.com/lib/5/plugins/exporting.js"></script>
+<!-- Resources -->
+<script src="//cdn.amcharts.com/lib/5/index.js"></script>
+<script src="//cdn.amcharts.com/lib/5/xy.js"></script>
+<script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="//cdn.amcharts.com/lib/5/plugins/exporting.js"></script>
 
-    <!-- Styles -->
-    <style>
-        .chart {
-            width: 100%;
-            max-width: 100%;
-        }
+<!-- Styles -->
+<style>
+    .chart {
+        width: 100%;
+        max-width: 100%;
+    }
 
 
+</style>
 
-    </style>
-
-    <div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
-        <div class="fa-3x">
-            <i class="fas fa-spinner fa-spin"></i>
-        </div>
-        <div>
-            Loading widget...
-        </div>
+<div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+    <div class="fa-3x">
+        <i class="fas fa-spinner fa-spin"></i>
     </div>
-
-    <div class="card h-100 bg-gradient-light pb-5">
-            <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
-                <h3 class="card-title">
-                    {{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }}
-                </h3>
-            </div>
-            <div class="card-body chart" id="{{ containerId }}"></div>
+    <div>
+        Loading widget...
     </div>
+</div>
+
+<div class="card h-100 bg-gradient-light pb-5">
+    <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
+        <h3 class="card-title">
+            {{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }}
+        </h3>
+    </div>
+    <div class="card-body chart" id="{{ containerId }}"></div>
+</div>
 
 
-    <script>
-        widget = () => {
-            let container = document.getElementById('{{ containerId }}');
-            let card = container.closest('.card');
-            let loader = card.parentElement.querySelector('.loader');
+<script>
+    widget = () => {
+        let container = document.getElementById('{{ containerId }}');
+        let card = container.closest('.card');
+        let loader = card.parentElement.querySelector('.loader');
 
-            loader.style.display = 'flex';
-            card.style.visibility = 'hidden';
+        loader.style.display = 'flex';
+        card.style.visibility = 'hidden';
 
 
-            fetchData(
-                '{{ path('yametrika/visitors') }}',
-                {"wid": {{ widget.id }}}
-            ).then(result => {
+        fetchData(
+            '{{ path('yametrika/visitors') }}',
+            {"wid": {{ widget.id }}}
+        ).then(result => {
 
-                let data = [];
+            let data = [];
 
-                for (let i in result.data) {
-                    data[i] = result.data[i]['metrics'];
-                    data[i]['date'] = Date.parse(result.data[i]['dimensions']['date']['name']);
-                }
+            for (let i in result.data) {
+                data[i] = result.data[i]['metrics'];
+                data[i]['date'] = Date.parse(result.data[i]['dimensions']['date']['name']);
+            }
 
-                am5.ready(function () {
-                    var root = am5.Root.new("{{ containerId }}");
+            am5.ready(function () {
+                var root = am5.Root.new("{{ containerId }}");
 
-                    root.setThemes([
-                        am5themes_Animated.new(root)
-                    ]);
+                root.setThemes([
+                    am5themes_Animated.new(root)
+                ]);
 
-                    var exporting = am5plugins_exporting.Exporting.new(root, {
-                        menu: am5plugins_exporting.ExportingMenu.new(root, {})
-                    });
-
-                    var chart = root.container.children.push(am5xy.XYChart.new(root, {
-                        layout: root.verticalLayout,
-                        panX: true,
-                        panY: true,
-                        wheelX: "panX",
-                        wheelY: "zoomX",
-                        pinchZoomX: true
-                    }));
-
-                    var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {
-                        behavior: "none"
-                    }));
-                    cursor.lineY.set("visible", false);
-
-                    var xAxis = chart.xAxes.push(am5xy.DateAxis.new(root, {
-                        maxDeviation: 0.2,
-                        baseInterval: {
-                            timeUnit: "day",
-                            count: 1
-                        },
-                        renderer: am5xy.AxisRendererX.new(root, {}),
-                        tooltip: am5.Tooltip.new(root, {})
-                    }));
-
-                    var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-                        renderer: am5xy.AxisRendererY.new(root, {})
-                    }));
-
-                    for (var k in result.totals) {
-                        var series = chart.series.push(am5xy.LineSeries.new(root, {
-                            name: k,
-                            xAxis: xAxis,
-                            yAxis: yAxis,
-                            valueYField: k,
-                            valueXField: "date",
-                            tooltip: am5.Tooltip.new(root, {
-                                labelText: "{valueY}"
-                            })
-                        }));
-                        series.appear(1000);
-                        series.data.setAll(data);
-                    }
-
-                    var legend = chart.children.push(am5.Legend.new(root, {
-                        centerX: am5.percent(50),
-                        x: am5.percent(50),
-                        useDefaultMarker: true
-                    }));
-
-                    legend.data.setAll(chart.series.values);
-
-                    chart.appear(1000, 100);
-
+                var exporting = am5plugins_exporting.Exporting.new(root, {
+                    menu: am5plugins_exporting.ExportingMenu.new(root, {})
                 });
 
-            }).catch(function (err) {
-                container.appendChild(document.createTextNode(err));
-            }).finally(() => {
-                loader.style.display = 'none';
-                card.style.visibility = 'visible';
+                var chart = root.container.children.push(am5xy.XYChart.new(root, {
+                    layout: root.verticalLayout,
+                    panX: true,
+                    panY: true,
+                    wheelX: "panX",
+                    wheelY: "zoomX",
+                    pinchZoomX: true
+                }));
+
+                var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {
+                    behavior: "none"
+                }));
+                cursor.lineY.set("visible", false);
+
+                var xAxis = chart.xAxes.push(am5xy.DateAxis.new(root, {
+                    maxDeviation: 0.2,
+                    baseInterval: {
+                        timeUnit: "day",
+                        count: 1
+                    },
+                    renderer: am5xy.AxisRendererX.new(root, {}),
+                    tooltip: am5.Tooltip.new(root, {})
+                }));
+
+                var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                    renderer: am5xy.AxisRendererY.new(root, {})
+                }));
+
+                for (var k in result.totals) {
+                    var series = chart.series.push(am5xy.LineSeries.new(root, {
+                        name: k,
+                        xAxis: xAxis,
+                        yAxis: yAxis,
+                        valueYField: k,
+                        valueXField: "date",
+                        tooltip: am5.Tooltip.new(root, {
+                            labelText: "{valueY}"
+                        })
+                    }));
+                    series.appear(1000);
+                    series.data.setAll(data);
+                }
+
+                var legend = chart.children.push(am5.Legend.new(root, {
+                    centerX: am5.percent(50),
+                    x: am5.percent(50),
+                    useDefaultMarker: true
+                }));
+
+                legend.data.setAll(chart.series.values);
+
+                chart.appear(1000, 100);
+
             });
-        };
-        widget();
-    </script>
 
+        }).catch(function (err) {
+            container.appendChild(document.createTextNode(err));
+        }).finally(() => {
+            loader.style.display = 'none';
+            card.style.visibility = 'visible';
+        });
+    };
+    widget();
+</script>
 
-
-
-{% endif %}

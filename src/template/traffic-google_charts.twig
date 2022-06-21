@@ -1,0 +1,94 @@
+{% set containerId = 'container' ~ widget.id %}
+
+    {% do asset('js', [
+        'modules/widget-yametrika/assets/Utils.js',
+    ]) %}
+
+<script type="text/javascript" src="//www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+
+    widget = () => {
+        let container = document.getElementById('{{ containerId }}');
+        let card = container.closest('.card');
+        let loader = card.parentElement.querySelector('.loader');
+
+        loader.style.display = 'flex';
+        card.style.visibility = 'hidden';
+
+
+        fetchData(
+            '{{ path('yametrika/visitors') }}',
+            {"wid": {{ widget.id }}}
+        ).then(result => {
+            try {
+
+                let labels = ['date'];
+                labels.push(...Object.keys(result.totals));
+
+                let values = [];
+                for (let i in result.data) {
+                    values[i] = [];
+                    values[i].push(result.data[i]['dimensions']['date']['name']);
+                    for (let k in result.data[i]['metrics']) {
+                        values[i].push(result.data[i]['metrics'][k]);
+                    }
+                }
+
+                google.charts.load('current', {'packages': ['line']});
+                google.charts.setOnLoadCallback(drawChart);
+
+                function drawChart() {
+                    let data = google.visualization.arrayToDataTable([
+                        labels,
+                        ...values
+                    ]);
+                    let options = {
+                        title: 'Посещаемость',
+                        curveType: 'function',
+                        legend: {position: 'bottom'}
+                    };
+
+                    let chart = new google.charts.Line(container);
+                    chart.draw(data, options);
+                }
+
+            } catch (e) {
+                throw e;
+            }
+        }).catch(function (err) {
+            container.appendChild(document.createTextNode(err));
+            card.style.background = 'red';
+        }).finally(() => {
+            loader.style.display = 'none';
+            card.style.visibility = 'visible';
+        });
+    };
+
+
+
+    widget();
+
+
+</script>
+
+<div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+    <div class="fa-3x">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div>
+        Loading widget...
+    </div>
+</div>
+
+<div class="card h-100 bg-gradient-light">
+    <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
+        <h3 class="card-title">
+            <i class="fas fa-map-marker-alt mr-1"></i>
+            Visitors
+        </h3>
+
+    </div>
+    <div class="card-body" id="{{ containerId }}"></div>
+
+</div>
+
