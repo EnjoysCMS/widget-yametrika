@@ -23,8 +23,7 @@ final class FetchData
             $_ENV['YA_METRIKA_TOKEN'] ?? throw new \InvalidArgumentException(
                 'Set in .env `YA_METRIKA_TOKEN`. See <a href="https://github.com/axp-dev/ya-metrika#Получение-токена">here</a>'
             ),
-            $this->widget->getOptions()['yandex-counter-id']['value']
-            ?? $this->widget->getOptions()['yandex-counter-id']
+            $this->getCounterId()
             ?? $_ENV['YA_METRIKA_COUNTER_ID']
             ?? throw new \InvalidArgumentException(
                 'Set counter id of yandex metrika in setting widget or in .env parameter `YA_METRIKA_COUNTER_ID`'
@@ -32,6 +31,21 @@ final class FetchData
         );
         $this->metrika = new \AXP\YaMetrika\YaMetrika($client);
         $this->cacher = include __DIR__ . '/Cacher.php';
+    }
+
+    private function getCounterId()
+    {
+        if ($this->widget->getOptions()['yandex-counter-id']['value'] ?? false) {
+            return $this->widget->getOptions()['yandex-counter-id']['value'];
+        }
+
+        if (isset($this->widget->getOptions()['yandex-counter-id']) && is_scalar(
+                $this->widget->getOptions()['yandex-counter-id']
+            )) {
+            return $this->widget->getOptions()['yandex-counter-id'];
+        }
+
+        return null;
     }
 
     private function getCacheId(string $prefix): string
@@ -52,7 +66,7 @@ final class FetchData
                 $startDate ?? (new \DateTime())->modify('-30 days'),
                 $endDate ?? new \DateTime()
             )->formatData();
-            $this->cacher->set($cacheId, $data, $this->widget->getOptions()['cache'] ?? 0);
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['cache'] ?? 0));
         }
 
         return $data;
@@ -72,7 +86,7 @@ final class FetchData
                 $endDate ?? new \DateTime(),
                 $limit
             )->formatData();
-            $this->cacher->set($cacheId, $data, $this->widget->getOptions()['cache'] ?? 60);
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['cache'] ?? 0));
         }
 
         return $data;
