@@ -1,10 +1,4 @@
-{% if error %}
-    <div class="h-100 border-dark border-1 border d-flex align-items-center justify-content-center">
-        <div class="h4 text-danger">{{ error|raw }}</div>
-    </div>
-{% else %}
-
-    {% set containerId = 'container' ~ widget.id %}
+{% set containerId = 'container' ~ widget.id %}
 
     {% do asset('js', [
         'modules/widget-yametrika/assets/Utils.js',
@@ -13,138 +7,159 @@
         'modules/widget-yametrika/node_modules/highcharts/modules/exporting.js',
     ]) %}
 
-    <div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
-        <div class="fa-3x">
-            <i class="fas fa-spinner fa-spin"></i>
-        </div>
-        <div>
-            Loading widget...
-        </div>
+<div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+    <div class="fa-3x">
+        <i class="fas fa-spinner fa-spin"></i>
     </div>
-
-    <div
-        class="card h-100 bg-{{ (widget.options['background-gradient'].value is same as('Yes')) ? 'gradient-' : '' }}{{ widget.options.background.value ?? 'transparent' }}">
-        <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
-            <h3 class="card-title">
-                {{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }}
-            </h3>
-
-        </div>
-        <div class="card-body" id="{{ containerId }}"></div>
+    <div>
+        Loading widget...
     </div>
+</div>
+
+<div
+    class="card h-100 bg-{{ (widget.options['background-gradient'].value is same as('Yes')) ? 'gradient-' : '' }}{{ widget.options.background.value ?? 'transparent' }}">
+    {#        <div class="card-header border-0 ui-sortable-handle" style="cursor: move;"> #}
+    {#            <h3 class="card-title"> #}
+    {#                {{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }} #}
+    {#            </h3> #}
+
+    {#        </div> #}
+    <div class="card-body" id="{{ containerId }}"></div>
+</div>
 
 
-    <script>
+<script>
 
-        widget = () => {
-            let container = document.getElementById('{{ containerId }}');
-            let card = container.closest('.card');
-            let loader = card.parentElement.querySelector('.loader');
+    widget = () => {
+        let container = document.getElementById('{{ containerId }}');
+        let card = container.closest('.card');
+        let loader = card.parentElement.querySelector('.loader');
 
-            loader.style.display = 'flex';
-            card.style.visibility = 'hidden';
+        loader.style.display = 'flex';
+        card.style.visibility = 'hidden';
 
-            fetchData(
-                '{{ path('yametrika/visitors') }}',
-                {"wid": {{ widget.id }}}
-            ).then(function (result) {
-                let series = [];
-                for (let k in result.totals) {
-                    let index = series.push({'name': k, 'data': []});
-                    for (let i in result.data) {
-                        series[index - 1]['data'].push([
-                            Date.parse(result.data[i]['dimensions']['date']['name']),
-                            result.data[i]['metrics'][k]
-                        ]);
-                    }
+        fetchData(
+            '{{ path('yametrika/visitors') }}',
+            {"wid": {{ widget.id }}}
+        ).then(function (result) {
+            let series = [];
+            for (let k in result.totals) {
+                let index = series.push({'name': k, 'data': []});
+                for (let i in result.data) {
+                    series[index - 1]['data'].push([
+                        Date.parse(result.data[i]['dimensions']['date']['name']),
+                        result.data[i]['metrics'][k]
+                    ]);
                 }
+            }
 
-                Highcharts.chart('{{ containerId }}', {
-
-                    chart: {
-                        zoomType: 'x',
-                        backgroundColor: 'rgba(255, 255, 255, 0.0)'
-                    },
-
-                    title: null,
-
-
-                    xAxis: {
-                        type: 'datetime',
-                        title: {
-                            text: 'Date'
-                        },
-                        //categories: result.xAxis
-                        // tickInterval: 7 * 24 * 3600 * 1000, // one week
-                        tickWidth: 0,
-                        gridLineWidth: 1,
-                        labels: {
-                            align: 'left',
-                            x: 3,
-                            y: -3
-                        }
-                    },
-
-                    yAxis: [{ // left y axis
-                        title: {
-                            text: 'Количество'
-                        },
-                        labels: {
-                            align: 'left',
-                            x: 3,
-                            y: 16,
-                            format: '{value:.,0f}'
-                        },
-                        showFirstLabel: false
-                    }, { // right y axis
-                        linkedTo: 0,
-                        gridLineWidth: 0,
-                        opposite: true,
-                        title: {
-                            text: null
-                        },
-                        labels: {
-                            align: 'right',
-                            x: -3,
-                            y: 16,
-                            format: '{value:.,0f}'
-                        },
-                        showFirstLabel: false
-                    }],
-
-                    legend: {
-                        align: 'left',
-                        verticalAlign: 'top',
-                        borderWidth: 0
-                    },
-
-                    tooltip: {
-                        shared: true,
-                        crosshairs: true
-                    },
-
-                    plotOptions: {
-                        series: {
-                            cursor: 'pointer',
-                            className: 'popup-on-click',
-                            marker: {
-                                lineWidth: 1
-                            }
-                        }
-                    },
-
-                    series: series
-                });
-            }).catch(function (err) {
-                container.appendChild(document.createTextNode(err));
-            }).finally(function () {
-                loader.style.display = 'none';
-                card.style.visibility = 'visible';
+            Highcharts.setOptions({
+                lang: {
+                    months: [
+                        'Январь', 'Февраль', 'Март', 'Апрель',
+                        'Май', 'Июнь', 'Июль', 'Август',
+                        'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+                    ],
+                    shortMonths: [
+                        'Янв', 'Фев', 'Мар', 'Апр',
+                        'Май', 'Июн', 'Июл', 'Авг',
+                        'Сен', 'Окт', 'Ноя', 'Дек'
+                    ],
+                    weekdays: [
+                        'Воскресенье', 'Понедельник', 'Вторник', 'Среда',
+                        'Четверг', 'Пятница', 'Суббота'
+                    ]
+                }
             });
-        };
-        widget();
+
+            Highcharts.chart('{{ containerId }}', {
+
+                chart: {
+                    zoomType: 'x',
+                    backgroundColor: 'rgba(255, 255, 255, 0.0)'
+                },
+
+                title: {
+                    text: '{{ widget.options.title.value ?? widget.options.title ?? 'Посещаемость' }}',
+                    align: 'left'
+                },
+                subtitle: {
+                    text: 'Источник: Yandex Metrika',
+                    align: 'left'
+                },
+
+                xAxis: {
+                    type: 'datetime',
+                    title: {
+                        text: 'Date'
+                    },
+                    tickWidth: 0,
+                    gridLineWidth: 1,
+                    labels: {
+                        align: 'left',
+                        x: 5,
+                        y: -3
+                    }
+                },
+
+                yAxis: [{ // left y axis
+                    title: {
+                        text: 'Количество'
+                    },
+                    labels: {
+                        align: 'left',
+                        x: 3,
+                        y: 16,
+                        format: '{value:.,0f}'
+                    },
+                    showFirstLabel: false
+                }, { // right y axis
+                    linkedTo: 0,
+                    gridLineWidth: 0,
+                    opposite: true,
+                    title: {
+                        text: null
+                    },
+                    labels: {
+                        align: 'right',
+                        x: -3,
+                        y: 16,
+                        format: '{value:.,0f}'
+                    },
+                    showFirstLabel: false
+                }],
+
+                legend: {
+                    align: 'left',
+                    verticalAlign: 'top',
+                    borderWidth: 0
+                },
+
+                tooltip: {
+                    shared: true,
+                    crosshairs: true
+                },
+
+                plotOptions: {
+                    series: {
+                        cursor: 'pointer',
+                        className: 'popup-on-click',
+                        marker: {
+                            lineWidth: 1
+                        }
+                    }
+                },
+
+                series: series
+            });
+        }).catch(function (err) {
+            container.appendChild(document.createTextNode(err));
+        }).finally(function () {
+            loader.style.display = 'none';
+            card.style.visibility = 'visible';
+        });
+    };
+    widget();
 
 
-    </script>
-
-{% endif %}
+</script>

@@ -1,9 +1,13 @@
 EnjoysCMS\WidgetYaMetrika\Widgets\Traffic:
-  name: &name Траффик
+  name: &name Посещаемость
   options:
     title: *name
     yandex-counter-id:
     cache: 1800
+    days:
+      value: 30
+      title: Период в днях
+      description: За какое количество дней получить статистику
     chart:
       value: 'highcharts_js'
       type: select

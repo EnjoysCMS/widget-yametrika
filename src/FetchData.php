@@ -47,7 +47,7 @@ final class FetchData
 
     private function getClient(): \AXP\YaMetrika\YaMetrika
     {
-        if ($this->client === null){
+        if ($this->client === null) {
             $client = new Client(
                 $_ENV['YA_METRIKA_TOKEN'] ?? throw new \InvalidArgumentException(
                     'Set in .env `YA_METRIKA_TOKEN`. See <a href="https://github.com/axp-dev/ya-metrika#Получение-токена">here</a>'
@@ -73,7 +73,9 @@ final class FetchData
 
         if (null === $data = $this->cacher?->get($cacheId)) {
             $data = $this->getClient()->getVisitorsForPeriod(
-                $startDate ?? (new \DateTime())->modify('-30 days'),
+                $startDate ?? (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                ),
                 $endDate ?? new \DateTime()
             )->formatData();
             $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['cache']['value'] ?? 0));
