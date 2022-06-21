@@ -13,6 +13,14 @@
         'modules/widget-yametrika/node_modules/highcharts/modules/exporting.js',
     ]) %}
 
+    <div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+        <div class="fa-3x">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div>
+            Loading widget...
+        </div>
+    </div>
 
     <div
         class="card h-100 bg-{{ (widget.options['background-gradient'].value is same as('Yes')) ? 'gradient-' : '' }}{{ widget.options.background.value ?? 'transparent' }}">
@@ -22,116 +30,119 @@
             </h3>
 
         </div>
-        <div class="card-body" id="{{ containerId }}">
-            <div class="loading position-relative align-items-center justify-content-center" style="display: none">
-                <div class="fa-3x">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-            </div>
-        </div>
+        <div class="card-body" id="{{ containerId }}"></div>
     </div>
 
 
     <script>
 
-        document.getElementById('{{ containerId }}').querySelector('.loading').style.display = 'flex';
+        widget = () => {
+            let container = document.getElementById('{{ containerId }}');
+            let card = container.closest('.card');
+            let loader = card.parentElement.querySelector('.loader');
 
-        fetchData(
-            '{{ path('yametrika/visitors') }}',
-            {"wid": {{ widget.id }}}
-        ).then(function (result) {
-            let series = [];
-            for (let k in result.totals) {
-                let index = series.push({'name': k, 'data': []});
-                for (let i in result.data) {
-                    series[index - 1]['data'].push([
-                        Date.parse(result.data[i]['dimensions']['date']['name']),
-                        result.data[i]['metrics'][k]
-                    ]);
+            loader.style.display = 'flex';
+            card.style.visibility = 'hidden';
+
+            fetchData(
+                '{{ path('yametrika/visitors') }}',
+                {"wid": {{ widget.id }}}
+            ).then(function (result) {
+                let series = [];
+                for (let k in result.totals) {
+                    let index = series.push({'name': k, 'data': []});
+                    for (let i in result.data) {
+                        series[index - 1]['data'].push([
+                            Date.parse(result.data[i]['dimensions']['date']['name']),
+                            result.data[i]['metrics'][k]
+                        ]);
+                    }
                 }
-            }
 
-            Highcharts.chart('{{ containerId }}', {
+                Highcharts.chart('{{ containerId }}', {
 
-                chart: {
-                    zoomType: 'x',
-                    backgroundColor: 'rgba(255, 255, 255, 0.0)'
-                },
-
-                title: null,
-
-
-                xAxis: {
-                    type: 'datetime',
-                    title: {
-                        text: 'Date'
+                    chart: {
+                        zoomType: 'x',
+                        backgroundColor: 'rgba(255, 255, 255, 0.0)'
                     },
-                    //categories: result.xAxis
-                    // tickInterval: 7 * 24 * 3600 * 1000, // one week
-                    tickWidth: 0,
-                    gridLineWidth: 1,
-                    labels: {
-                        align: 'left',
-                        x: 3,
-                        y: -3
-                    }
-                },
 
-                yAxis: [{ // left y axis
-                    title: {
-                        text: 'Количество'
-                    },
-                    labels: {
-                        align: 'left',
-                        x: 3,
-                        y: 16,
-                        format: '{value:.,0f}'
-                    },
-                    showFirstLabel: false
-                }, { // right y axis
-                    linkedTo: 0,
-                    gridLineWidth: 0,
-                    opposite: true,
-                    title: {
-                        text: null
-                    },
-                    labels: {
-                        align: 'right',
-                        x: -3,
-                        y: 16,
-                        format: '{value:.,0f}'
-                    },
-                    showFirstLabel: false
-                }],
+                    title: null,
 
-                legend: {
-                    align: 'left',
-                    verticalAlign: 'top',
-                    borderWidth: 0
-                },
 
-                tooltip: {
-                    shared: true,
-                    crosshairs: true
-                },
-
-                plotOptions: {
-                    series: {
-                        cursor: 'pointer',
-                        className: 'popup-on-click',
-                        marker: {
-                            lineWidth: 1
+                    xAxis: {
+                        type: 'datetime',
+                        title: {
+                            text: 'Date'
+                        },
+                        //categories: result.xAxis
+                        // tickInterval: 7 * 24 * 3600 * 1000, // one week
+                        tickWidth: 0,
+                        gridLineWidth: 1,
+                        labels: {
+                            align: 'left',
+                            x: 3,
+                            y: -3
                         }
-                    }
-                },
+                    },
 
-                series: series
+                    yAxis: [{ // left y axis
+                        title: {
+                            text: 'Количество'
+                        },
+                        labels: {
+                            align: 'left',
+                            x: 3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }, { // right y axis
+                        linkedTo: 0,
+                        gridLineWidth: 0,
+                        opposite: true,
+                        title: {
+                            text: null
+                        },
+                        labels: {
+                            align: 'right',
+                            x: -3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }],
+
+                    legend: {
+                        align: 'left',
+                        verticalAlign: 'top',
+                        borderWidth: 0
+                    },
+
+                    tooltip: {
+                        shared: true,
+                        crosshairs: true
+                    },
+
+                    plotOptions: {
+                        series: {
+                            cursor: 'pointer',
+                            className: 'popup-on-click',
+                            marker: {
+                                lineWidth: 1
+                            }
+                        }
+                    },
+
+                    series: series
+                });
+            }).catch(function (err) {
+                container.appendChild(document.createTextNode(err));
+            }).finally(function () {
+                loader.style.display = 'none';
+                card.style.visibility = 'visible';
             });
-        }).catch(function (err) {
-            document.getElementById('{{ containerId }}').appendChild(document.createTextNode(err));
-        }).finally(function () {
-            document.getElementById('{{ containerId }}').querySelector('.loading').style.display= 'none';
-        });
+        };
+        widget();
 
 
     </script>
