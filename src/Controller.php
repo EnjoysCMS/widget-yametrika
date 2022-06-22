@@ -86,4 +86,17 @@ final class Controller extends BaseController
             return $this->responseJson($e->getMessage())->withStatus(500);
         }
     }
+
+    #[Route(
+        path: '/yametrika/age_gender',
+        name: 'yametrika/age_gender',
+        methods: ['post']
+    )]
+    public function getAgeGender(): ResponseInterface {
+        try {
+            return $this->responseJson($this->metrika->getAgeGender());
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
+    }
 }
