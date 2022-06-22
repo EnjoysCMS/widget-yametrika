@@ -25,19 +25,24 @@ final class FetchData
         ]);
     }
 
-    private function getCounterId()
+    private function getOption(string $key)
     {
-        if ($this->widget->getOptions()['yandex-counter-id']['value'] ?? false) {
-            return $this->widget->getOptions()['yandex-counter-id']['value'];
+        if ($this->widget->getOptions()[$key]['value'] ?? false) {
+            return $this->widget->getOptions()[$key]['value'];
         }
 
-        if (isset($this->widget->getOptions()['yandex-counter-id']) && is_scalar(
-                $this->widget->getOptions()['yandex-counter-id']
+        if (isset($this->widget->getOptions()[$key]) && is_scalar(
+                $this->widget->getOptions()[$key]
             )) {
-            return $this->widget->getOptions()['yandex-counter-id'];
+            return $this->widget->getOptions()[$key];
         }
 
         return null;
+    }
+
+    private function getCounterId()
+    {
+        return $this->getOption('yandex-counter-id');
     }
 
     private function getCacheId(string $prefix): string
@@ -105,4 +110,92 @@ final class FetchData
 
         return $data;
     }
+
+
+    public function getAgeGender()
+    {
+        $cacheId = $this->getCacheId('age-gender');
+
+        if (null === $data = $this->cacher?->get($cacheId)) {
+            $data = $this->getClient()->getAgeGenderForPeriod(
+                (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                ),
+                new \DateTime(),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+            )->formatData();
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        }
+
+        return $data;
+    }
+
+
+    public function getGeo()
+    {
+        $cacheId = $this->getCacheId('geo');
+
+        if (null === $data = $this->cacher?->get($cacheId)) {
+            $data = $this->getClient()->getGeo(
+                (int)($this->widget->getOptions()['days']['value'] ?? 7),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+            )->formatData();
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        }
+
+        return $data;
+    }
+
+    public function getMostViewedPages()
+    {
+        $cacheId = $this->getCacheId('most-view-pages');
+
+        if (null === $data = $this->cacher?->get($cacheId)) {
+            $data = $this->getClient()->getMostViewedPagesForPeriod(
+                (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                ),
+                new \DateTime(),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+            )->formatData();
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        }
+
+        return $data;
+    }
+
+    public function getSearchPhrases()
+    {
+        $cacheId = $this->getCacheId('search-phrases');
+
+        if (null === $data = $this->cacher?->get($cacheId)) {
+            $data = $this->getClient()->getSearchPhrases(
+                (int)($this->widget->getOptions()['days']['value'] ?? 30),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+            )->formatData();
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        }
+
+        return $data;
+    }
+
+    public function getUsersSearchEngine()
+    {
+        $cacheId = $this->getCacheId('users-search-engine');
+
+        if (null === $data = $this->cacher?->get($cacheId)) {
+            $data = $this->getClient()->getUsersSearchEngineForPeriod(
+                (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                ),
+                new \DateTime(),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+            )->formatData();
+            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        }
+
+        return $data;
+    }
+
+
 }
