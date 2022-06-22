@@ -59,4 +59,17 @@ final class Controller extends BaseController
             return $this->responseJson($e->getMessage())->withStatus(500);
         }
     }
+
+    #[Route(
+        path: '/yametrika/se',
+        name: 'yametrika/se',
+        methods: ['post']
+    )]
+    public function getSE(): ResponseInterface {
+        try {
+            return $this->responseJson($this->metrika->getUsersSearchEngine());
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
+    }
 }

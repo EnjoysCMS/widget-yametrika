@@ -47,3 +47,28 @@ EnjoysCMS\WidgetYaMetrika\Widgets\Browsers:
       h: 21
       w: 5
 
+EnjoysCMS\WidgetYaMetrika\Widgets\SE:
+  name: &name Поисковые системы
+  options:
+    title: *name
+    yandex-counter-id:
+    cache: 1800
+    days:
+      value: 30
+      title: Период в днях
+      description: За какое количество дней получить статистику
+    limit:
+      value: 10
+    chart:
+      value: 'highcharts_js'
+      type: select
+      data: ['highcharts_js']
+    background:
+      value: 'white'
+      type: select
+      data: [ light, white, transparent ]
+    gs:
+      min-h: 15
+      min-w: 3
+      h: 21
+      w: 5

@@ -1,0 +1,99 @@
+{% set containerId = 'container' ~ widget.id %}
+
+    {% do asset('js', [
+        'modules/widget-yametrika/assets/Utils.js',
+        'modules/widget-yametrika/node_modules/highcharts/highcharts.js',
+        'modules/widget-yametrika/node_modules/highcharts/modules/accessibility.js',
+        'modules/widget-yametrika/node_modules/highcharts/modules/exporting.js',
+    ]) %}
+
+<div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+    <div class="fa-3x">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div>
+        Loading widget...
+    </div>
+</div>
+
+<div class="card h-100 bg-{{ widget.options.background.value ?? 'transparent' }}">
+    <div class="card-body" id="{{ containerId }}"></div>
+</div>
+
+
+<script>
+    widget = () => {
+        let container = document.getElementById('{{ containerId }}');
+        let card = container.closest('.card');
+        let loader = card.parentElement.querySelector('.loader');
+
+        loader.style.display = 'flex';
+        card.style.visibility = 'hidden';
+
+        fetchData(
+            '{{ path('yametrika/se') }}',
+            {"wid": {{ widget.id }}}
+        ).then(function (result) {
+
+            let data = []
+            for (let i in result.data) {
+                data.push({
+                    'name': result.data[i]['dimensions']['searchEngine']['name'],
+                    'y': result.data[i]['metrics']['visits']
+                });
+            }
+
+            let series = [{'name': 'searchEngine', 'colorByPoint': true, 'data': data}];
+
+
+            {% include '@metrika/highcharts_js/highchartsLang.js' %}
+
+            Highcharts.chart('{{ containerId }}', {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie',
+                    backgroundColor: 'rgba(255, 255, 255, 0.0)'
+                },
+                title: {
+                    text: '{{ widget.options.title.value ?? widget.options.title ?? 'Браузеры' }}',
+                    align: 'left'
+                },
+                subtitle: {
+                    text: 'Источник: Yandex Metrika',
+                    align: 'left'
+                },
+                tooltip: {
+                    headerFormat: '',
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> <b> {point.name}</b><br/>' +
+                        'Визиты: <b>{point.y}</b><br/>'
+                },
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        }
+                    }
+                },
+                series: series
+            });
+        }).catch(function (err) {
+            container.appendChild(document.createTextNode(err));
+        }).finally(function () {
+            loader.style.display = 'none';
+            card.style.visibility = 'visible';
+        });
+    };
+    widget();
+
+
+</script>
