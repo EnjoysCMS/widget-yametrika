@@ -1,4 +1,4 @@
-EnjoysCMS\WidgetYaMetrika\Widgets\Traffic:
+EnjoysCMS\WidgetYaMetrika\Widgets\Visits:
   name: &name Посещаемость
   options:
     title: *name

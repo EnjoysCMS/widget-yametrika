@@ -8,11 +8,11 @@ namespace EnjoysCMS\WidgetYaMetrika\Widgets;
 
 use EnjoysCMS\WidgetYaMetrika\YaMetrika;
 
-final class Traffic extends YaMetrika
+final class Visits extends YaMetrika
 {
     public function view(): string
     {
-        $template = sprintf('@metrika/traffic-%s.twig', $this->widget->getOptions()['chart']['value'] ?? '');
+        $template = sprintf('@metrika/%s/visits.twig', $this->widget->getOptions()['chart']['value'] ?? '');
 
         if (!$this->twigLoader->exists($template)){
             throw new \InvalidArgumentException(sprintf('%s not exist', $template));
