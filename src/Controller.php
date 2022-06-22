@@ -112,4 +112,17 @@ final class Controller extends BaseController
             return $this->responseJson($e->getMessage())->withStatus(500);
         }
     }
+
+    #[Route(
+        path: '/yametrika/most_viewed_pages',
+        name: 'yametrika/most_viewed_pages',
+        methods: ['post']
+    )]
+    public function getMostViewedPages(): ResponseInterface {
+        try {
+            return $this->responseJson($this->metrika->getMostViewedPages());
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
+    }
 }
