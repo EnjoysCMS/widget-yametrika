@@ -99,4 +99,17 @@ final class Controller extends BaseController
             return $this->responseJson($e->getMessage())->withStatus(500);
         }
     }
+
+    #[Route(
+        path: '/yametrika/geo',
+        name: 'yametrika/geo',
+        methods: ['post']
+    )]
+    public function getGeo(): ResponseInterface {
+        try {
+            return $this->responseJson($this->metrika->getGeo());
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
+    }
 }

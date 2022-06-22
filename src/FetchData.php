@@ -136,8 +136,11 @@ final class FetchData
         $cacheId = $this->getCacheId('geo');
 
         if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getGeo(
-                (int)($this->widget->getOptions()['days']['value'] ?? 7),
+            $data = $this->getClient()->getGeoForPeriod(
+                (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 7))
+                ),
+                new \DateTime(),
                 (int)($this->widget->getOptions()['limit']['value'] ?? 20)
             )->formatData();
             $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));

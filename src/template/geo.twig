@@ -1,0 +1,86 @@
+{% set containerId = 'container' ~ widget.id %}
+
+    {% do asset('js', [
+        'modules/widget-yametrika/assets/Utils.js',
+    ]) %}
+
+<div class="loader position-relative flex-column align-items-center justify-content-center" style="display: none">
+    <div class="fa-3x">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div>
+        Loading widget...
+    </div>
+</div>
+
+<div class="card h-100 bg-{{ widget.options.background.value ?? 'transparent' }}">
+    <div class="card-header border-0 ui-sortable-handle" style="cursor: move;">
+        <h3 class="card-title">
+            {{ widget.options.title.value ?? widget.options.title ?? 'Поисковые фразы' }}
+        </h3>
+    </div>
+    <div class="card-body">
+        <table id="{{ containerId }}" class="table table-hover ">
+            <thead>
+            <tr>
+                <th>Регион</th>
+                <th>Визиты</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    widget = () => {
+        let container = document.getElementById('{{ containerId }}');
+        let card = container.closest('.card');
+        let loader = card.parentElement.querySelector('.loader');
+
+        loader.style.display = 'flex';
+        container.closest('.card-body').style.overflowY = 'auto';
+        card.style.visibility = 'hidden';
+
+        fetchData(
+            '{{ path('yametrika/geo') }}',
+            {"wid": {{ widget.id }}}
+        ).then(function (result) {
+
+            let data = []
+            for (let i in result.data) {
+                data.push({
+                    'regionArea': result.data[i]['dimensions']['regionArea']['name'],
+                    ...result.data[i]['metrics']
+                });
+            }
+
+            let tBody = container.appendChild(document.createElement('tbody'));
+            data.forEach(function (item) {
+                let tdName = document.createElement('td');
+                tdName.innerHTML = item.regionArea;
+
+                let tdVisits = document.createElement('td');
+                tdVisits.innerHTML = item.visits;
+
+                let tr = document.createElement('tr');
+
+                tr.appendChild(tdName);
+                tr.appendChild(tdVisits);
+
+                tBody.appendChild(tr)
+            })
+            //  console.log(tBody, data)
+
+        }).catch(function (err) {
+            container.appendChild(document.createTextNode(err));
+        }).finally(function () {
+            loader.style.display = 'none';
+            card.style.visibility = 'visible';
+        });
+    };
+    widget();
+
+
+</script>
