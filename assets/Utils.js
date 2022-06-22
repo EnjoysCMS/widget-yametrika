@@ -1,3 +1,7 @@
+grid.on('change', function (e, items) {
+    window.dispatchEvent(new Event('resize'));
+});
+
 const fetchData = async function (url, data = '') {
     let response = await fetch(url, {
         method: 'POST',

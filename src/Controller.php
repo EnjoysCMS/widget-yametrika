@@ -52,13 +52,9 @@ final class Controller extends BaseController
         name: 'yametrika/browsers',
         methods: ['post']
     )]
-    public function getBrowsers(
-        \DateTime $startDate = null,
-        \DateTime $endDate = null,
-        int $limit = 10
-    ): ResponseInterface {
+    public function getBrowsers(): ResponseInterface {
         try {
-            return $this->responseJson($this->metrika->getBrowsers($startDate, $endDate, $limit));
+            return $this->responseJson($this->metrika->getBrowsers());
         } catch (\Throwable $e) {
             return $this->responseJson($e->getMessage())->withStatus(500);
         }

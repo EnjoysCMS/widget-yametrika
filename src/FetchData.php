@@ -88,15 +88,17 @@ final class FetchData
      * @throws FormatException
      * @throws InvalidArgumentException
      */
-    public function getBrowsers(\DateTime $startDate = null, \DateTime $endDate = null, int $limit = 10)
+    public function getBrowsers()
     {
         $cacheId = $this->getCacheId('browsers');
 
         if (null === $data = $this->cacher?->get($cacheId)) {
             $data = $this->getClient()->getBrowsersForPeriod(
-                $startDate ?? (new \DateTime())->modify('-30 days'),
-                $endDate ?? new \DateTime(),
-                $limit
+                (new \DateTime())->modify(
+                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                ),
+                new \DateTime(),
+                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
             )->formatData();
             $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
         }
