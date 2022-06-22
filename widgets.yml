@@ -72,3 +72,25 @@ EnjoysCMS\WidgetYaMetrika\Widgets\SE:
       min-w: 3
       h: 21
       w: 5
+
+EnjoysCMS\WidgetYaMetrika\Widgets\SearchPhrases:
+  name: &name Поисковые запросы
+  options:
+    title: *name
+    yandex-counter-id:
+    cache: 1800
+    days:
+      value: 30
+      title: Период в днях
+      description: За какое количество дней получить статистику
+    limit:
+      value: 20
+    background:
+      value: 'white'
+      type: select
+      data: [ primary, secondary, success, danger, warning, info, light, dark, white, transparent ]
+    gs:
+      min-h: 15
+      min-w: 3
+      h: 21
+      w: 5

@@ -72,4 +72,18 @@ final class Controller extends BaseController
             return $this->responseJson($e->getMessage())->withStatus(500);
         }
     }
+
+
+    #[Route(
+        path: '/yametrika/search_phrases',
+        name: 'yametrika/search_phrases',
+        methods: ['post']
+    )]
+    public function getSearchPhrases(): ResponseInterface {
+        try {
+            return $this->responseJson($this->metrika->getSearchPhrases());
+        } catch (\Throwable $e) {
+            return $this->responseJson($e->getMessage())->withStatus(500);
+        }
+    }
 }
