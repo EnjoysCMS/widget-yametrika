@@ -8,7 +8,8 @@ const fetchData = async function (url, data = '') {
         mode: 'cors',
         cache: 'no-cache',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'text/json',
         },
         referrerPolicy: 'no-referrer',
         body: JSON.stringify(data)
