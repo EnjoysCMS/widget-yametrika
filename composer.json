@@ -14,6 +14,9 @@
             "email": "deadly.info@gmail.com"
         }
     ],
+    "extra": {
+        "module-name": "Виджеты Яндекс.Метрика"
+    },
     "require": {
         "php": ">=8.0",
         "enjoyscms/admin": "^4.2",
