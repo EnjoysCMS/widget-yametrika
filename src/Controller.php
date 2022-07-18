@@ -20,7 +20,7 @@ final class Controller extends BaseController
     public function __construct(EntityManager $em, private ServerRequestInterface $request)
     {
         parent::__construct();
-        $payload = json_decode($this->request->getBody()->getContents());
+        $payload = json_decode($this->request->getBody()->__toString());
         $widget = $em->getRepository(Widget::class)->find(
                 $payload->wid ?? 0
             ) ?? throw new \InvalidArgumentException('Widget not found');
