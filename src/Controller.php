@@ -9,8 +9,10 @@ namespace EnjoysCMS\WidgetYaMetrika;
 use Doctrine\ORM\EntityManager;
 use EnjoysCMS\Core\BaseController;
 use EnjoysCMS\Core\Entities\Widget;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class Controller extends BaseController
@@ -25,7 +27,8 @@ final class Controller extends BaseController
                 $payload->wid ?? 0
             ) ?? throw new \InvalidArgumentException('Widget not found');
 
-        $this->metrika = new FetchData($widget);
+        $cache = new FilesystemAdapter('widgets', directory: $_ENV['TEMP_DIR'] . '/cache');
+        $this->metrika = new FetchData($widget, $cache);
     }
 
 

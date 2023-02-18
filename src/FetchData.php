@@ -8,21 +8,15 @@ namespace EnjoysCMS\WidgetYaMetrika;
 
 use AXP\YaMetrika\Client;
 use AXP\YaMetrika\Exception\FormatException;
-use Enjoys\SimpleCache\Cacher\FileCache;
 use EnjoysCMS\Core\Entities\Widget;
-use Psr\SimpleCache\CacheInterface;
-use Psr\SimpleCache\InvalidArgumentException;
+use Psr\Cache\CacheItemPoolInterface;
 
 final class FetchData
 {
-    private ?CacheInterface $cacher = null;
     private $client = null;
 
-    public function __construct(private Widget $widget)
+    public function __construct(private Widget $widget, private CacheItemPoolInterface $cache)
     {
-        $this->cacher = new FileCache([
-            'path' => $_ENV['TEMP_DIR'] . '/cache/yametrika-widgets'
-        ]);
     }
 
     private function getOption(string $key)
@@ -55,8 +49,8 @@ final class FetchData
         if ($this->client === null) {
             $client = new Client(
                 $_ENV['YA_METRIKA_TOKEN'] ?? throw new \InvalidArgumentException(
-                    'Set in .env `YA_METRIKA_TOKEN`. See <a href="https://github.com/axp-dev/ya-metrika#Получение-токена">here</a>'
-                ),
+                'Set in .env `YA_METRIKA_TOKEN`. See <a href="https://github.com/axp-dev/ya-metrika#Получение-токена">here</a>'
+            ),
                 $this->getCounterId()
                 ?? $_ENV['YA_METRIKA_COUNTER_ID']
                 ?? throw new \InvalidArgumentException(
@@ -70,134 +64,168 @@ final class FetchData
 
     /**
      * @throws FormatException
-     * @throws InvalidArgumentException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getVisitors(\DateTime $startDate = null, \DateTime $endDate = null)
     {
-        $cacheId = $this->getCacheId('visitors');
+        $item = $this->cache->getItem($this->getCacheId('visitors'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getVisitorsForPeriod(
-                $startDate ?? (new \DateTime())->modify(
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getVisitorsForPeriod(
+                    $startDate ?? (new \DateTime())->modify(
                     sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
                 ),
-                $endDate ?? new \DateTime()
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['cache']['value'] ?? 0));
+                    $endDate ?? new \DateTime()
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
     /**
      * @throws FormatException
-     * @throws InvalidArgumentException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getBrowsers()
     {
-        $cacheId = $this->getCacheId('browsers');
+        $item = $this->cache->getItem($this->getCacheId('browsers'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getBrowsersForPeriod(
-                (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                ),
-                new \DateTime(),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getBrowsersForPeriod(
+                    (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                    ),
+                    new \DateTime(),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
 
+    /**
+     * @throws FormatException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getAgeGender()
     {
-        $cacheId = $this->getCacheId('age-gender');
+        $item = $this->cache->getItem($this->getCacheId('age-gender'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getAgeGenderForPeriod(
-                (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                ),
-                new \DateTime(),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getAgeGenderForPeriod(
+                    (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                    ),
+                    new \DateTime(),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
 
+    /**
+     * @throws FormatException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getGeo()
     {
-        $cacheId = $this->getCacheId('geo');
+        $item = $this->cache->getItem($this->getCacheId('geo'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getGeoForPeriod(
-                (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 7))
-                ),
-                new \DateTime(),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getGeoForPeriod(
+                    (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 7))
+                    ),
+                    new \DateTime(),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
+    /**
+     * @throws FormatException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getMostViewedPages()
     {
-        $cacheId = $this->getCacheId('most-view-pages');
+        $item = $this->cache->getItem($this->getCacheId('most-view-pages'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getMostViewedPagesForPeriod(
-                (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                ),
-                new \DateTime(),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getMostViewedPagesForPeriod(
+                    (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                    ),
+                    new \DateTime(),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
+    /**
+     * @throws FormatException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getSearchPhrases()
     {
-        $cacheId = $this->getCacheId('search-phrases');
+        $item = $this->cache->getItem($this->getCacheId('search-phrases'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getSearchPhrases(
-                (int)($this->widget->getOptions()['days']['value'] ?? 30),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getSearchPhrases(
+                    (int)($this->widget->getOptions()['days']['value'] ?? 30),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
+    /**
+     * @throws FormatException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getUsersSearchEngine()
     {
-        $cacheId = $this->getCacheId('users-search-engine');
+        $item = $this->cache->getItem($this->getCacheId('users-search-engine'));
 
-        if (null === $data = $this->cacher?->get($cacheId)) {
-            $data = $this->getClient()->getUsersSearchEngineForPeriod(
-                (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                ),
-                new \DateTime(),
-                (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-            )->formatData();
-            $this->cacher->set($cacheId, $data, (int)($this->widget->getOptions()['value'] ?? 0));
+        if (!$item->isHit()) {
+            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
+            $item->set(
+                $this->getClient()->getUsersSearchEngineForPeriod(
+                    (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                    ),
+                    new \DateTime(),
+                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                )->formatData()
+            );
         }
 
-        return $data;
+        return $item->get();
     }
 
 
