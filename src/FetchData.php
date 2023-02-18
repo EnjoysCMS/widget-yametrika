@@ -13,10 +13,11 @@ use Psr\Cache\CacheItemPoolInterface;
 
 final class FetchData
 {
-    private $client = null;
-
-    public function __construct(private Widget $widget, private CacheItemPoolInterface $cache)
-    {
+    public function __construct(
+        private Widget $widget,
+        private CacheItemPoolInterface $cache,
+        private ?\AXP\YaMetrika\YaMetrika $client = null
+    ) {
     }
 
     private function getOption(string $key)
@@ -71,15 +72,18 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('visitors'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getVisitorsForPeriod(
-                    $startDate ?? (new \DateTime())->modify(
-                    sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                ),
-                    $endDate ?? new \DateTime()
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getVisitorsForPeriod(
+                        $startDate ?? (new \DateTime())->modify(
+                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                    ),
+                        $endDate ?? new \DateTime()
+                    )->formatData()
+                )
+            ;
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -94,16 +98,19 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('browsers'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getBrowsersForPeriod(
-                    (new \DateTime())->modify(
-                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                    ),
-                    new \DateTime(),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getBrowsersForPeriod(
+                        (new \DateTime())->modify(
+                            sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                        ),
+                        new \DateTime(),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                    )->formatData()
+                )
+            ;
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -119,16 +126,19 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('age-gender'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getAgeGenderForPeriod(
-                    (new \DateTime())->modify(
-                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                    ),
-                    new \DateTime(),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getAgeGenderForPeriod(
+                        (new \DateTime())->modify(
+                            sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                        ),
+                        new \DateTime(),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                    )->formatData()
+                )
+            ;
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -144,16 +154,19 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('geo'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getGeoForPeriod(
-                    (new \DateTime())->modify(
-                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 7))
-                    ),
-                    new \DateTime(),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getGeoForPeriod(
+                        (new \DateTime())->modify(
+                            sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 7))
+                        ),
+                        new \DateTime(),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                    )->formatData()
+                )
+            ;
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -168,16 +181,19 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('most-view-pages'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getMostViewedPagesForPeriod(
-                    (new \DateTime())->modify(
-                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                    ),
-                    new \DateTime(),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getMostViewedPagesForPeriod(
+                        (new \DateTime())->modify(
+                            sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                        ),
+                        new \DateTime(),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                    )->formatData()
+                )
+            ;
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -192,13 +208,17 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('search-phrases'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getSearchPhrases(
-                    (int)($this->widget->getOptions()['days']['value'] ?? 30),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 20)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getSearchPhrases(
+                        (int)($this->widget->getOptions()['days']['value'] ?? 30),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 20)
+                    )->formatData()
+                )
+            ;
+
+            $this->cache->save($item);
         }
 
         return $item->get();
@@ -213,16 +233,20 @@ final class FetchData
         $item = $this->cache->getItem($this->getCacheId('users-search-engine'));
 
         if (!$item->isHit()) {
-            $item->expiresAfter((int)($this->widget->getOptions()['cache']['value'] ?? 0));
-            $item->set(
-                $this->getClient()->getUsersSearchEngineForPeriod(
-                    (new \DateTime())->modify(
-                        sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
-                    ),
-                    new \DateTime(),
-                    (int)($this->widget->getOptions()['limit']['value'] ?? 10)
-                )->formatData()
-            );
+            $item
+                ->expiresAfter((int)($this->widget->getOptions()['cache'] ?? 0))
+                ->set(
+                    $this->getClient()->getUsersSearchEngineForPeriod(
+                        (new \DateTime())->modify(
+                            sprintf('-%d days', (int)($this->widget->getOptions()['days']['value'] ?? 30))
+                        ),
+                        new \DateTime(),
+                        (int)($this->widget->getOptions()['limit']['value'] ?? 10)
+                    )->formatData()
+                )
+            ;
+
+            $this->cache->save($item);
         }
 
         return $item->get();
