@@ -32,7 +32,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/visitors') }}',
+            '{{ path('@yametrika_visitors') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
             let series = [];

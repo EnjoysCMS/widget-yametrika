@@ -31,7 +31,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/age_gender') }}',
+            '{{ path('@yametrika_age_gender') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
 

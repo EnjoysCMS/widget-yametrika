@@ -50,7 +50,7 @@
 
 
         fetchData(
-            '{{ path('yametrika/visitors') }}',
+            '{{ path('@yametrika_visitors') }}',
             {"wid": {{ widget.id }}}
         ).then(result => {
 

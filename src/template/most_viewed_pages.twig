@@ -44,7 +44,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/most_viewed_pages') }}',
+            '{{ path('@yametrika_most_viewed_pages') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
 

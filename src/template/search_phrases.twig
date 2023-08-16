@@ -44,7 +44,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/search_phrases') }}',
+            '{{ path('@yametrika_search_phrases') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
 

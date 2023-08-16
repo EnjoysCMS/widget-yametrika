@@ -31,7 +31,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/browsers') }}',
+            '{{ path('@yametrika_browsers') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
 

@@ -44,7 +44,7 @@
         card.style.visibility = 'hidden';
 
         fetchData(
-            '{{ path('yametrika/geo') }}',
+            '{{ path('@yametrika_geo') }}',
             {"wid": {{ widget.id }}}
         ).then(function (result) {
 
