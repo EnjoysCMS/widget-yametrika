@@ -18,8 +18,8 @@
         "module-name": "Виджеты Яндекс.Метрика"
     },
     "require": {
-        "php": "^8.0",
-        "enjoyscms/admin": "^4.3",
+        "php": "^8.1",
+        "enjoyscms/admin": "^6.0@dev",
         "axp-dev/ya-metrika": "^2.1"
     },
     "require-dev": {
