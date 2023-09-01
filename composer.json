@@ -5,7 +5,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "EnjoysCMS\\WidgetYaMetrika\\": "src/"
+            "EnjoysCMS\\WidgetYaMetrika\\": "src/",
+            "EnjoysCMS\\WidgetYaMetrika\\Composer\\Scripts\\": "scripts/"
         }
     },
     "authors": [
@@ -26,7 +27,14 @@
         "symfony/cache": "^6.0"
     },
     "scripts": {
-        "post-install-cmd": "EnjoysCMS\\WidgetYaMetrika\\Composer::assetsInstall",
-        "post-update-cmd": "EnjoysCMS\\WidgetYaMetrika\\Composer::assetsInstall"
+        "widget-yametrika-assets-install": "EnjoysCMS\\WidgetYaMetrika\\Composer\\Scripts\\AssetsInstallCommand",
+        "post-install-cmd": [
+            "echo -e \"\\x1b[1mWidget Yandex.Metrika\\x1b[00m\"",
+            "@widget-yametrika-assets-install"
+        ],
+        "post-update-cmd": [
+            "echo -e \"\\x1b[1mWidget Yandex.Metrika\\x1b[00m\"",
+            "@widget-yametrika-assets-install"
+        ]
     }
 }
