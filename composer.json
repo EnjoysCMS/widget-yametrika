@@ -29,11 +29,11 @@
     "scripts": {
         "widget-yametrika-assets-install": "EnjoysCMS\\WidgetYaMetrika\\Composer\\Scripts\\AssetsInstallCommand",
         "post-install-cmd": [
-            "echo -e \"\\x1b[1mWidget Yandex.Metrika\\x1b[00m\"",
+            "@print-module-name Widget Yandex.Metrika",
             "@widget-yametrika-assets-install"
         ],
         "post-update-cmd": [
-            "echo -e \"\\x1b[1mWidget Yandex.Metrika\\x1b[00m\"",
+            "@print-module-name Widget Yandex.Metrika",
             "@widget-yametrika-assets-install"
         ]
     }
