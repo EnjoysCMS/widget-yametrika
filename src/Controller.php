@@ -47,7 +47,7 @@ final class Controller extends AbstractController
         name: 'visitors',
         methods: ['post']
     )]
-    public function getVisitors(DateTime $startDate = null, DateTime $endDate = null): ResponseInterface
+    public function getVisitors(?DateTime $startDate = null, ?DateTime $endDate = null): ResponseInterface
     {
         try {
             return $this->json($this->metrika->getVisitors($startDate, $endDate));

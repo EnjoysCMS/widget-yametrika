@@ -55,7 +55,7 @@ final class FetchData
      * @throws FormatException
      * @throws InvalidArgumentException
      */
-    public function getVisitors(DateTime $startDate = null, DateTime $endDate = null)
+    public function getVisitors(?DateTime $startDate = null, ?DateTime $endDate = null)
     {
         $item = $this->cache->getItem($this->getCacheId('visitors'));
 
