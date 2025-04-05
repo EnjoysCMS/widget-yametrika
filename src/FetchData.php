@@ -54,6 +54,7 @@ final class FetchData
     /**
      * @throws FormatException
      * @throws InvalidArgumentException
+     * @throws \DateMalformedStringException
      */
     public function getVisitors(?DateTime $startDate = null, ?DateTime $endDate = null)
     {

@@ -11,7 +11,6 @@ use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
 use EnjoysCMS\Core\AbstractController;
 use EnjoysCMS\Core\Block\Entity\Widget;
 use EnjoysCMS\Core\Routing\Annotation\Route;
@@ -25,8 +24,8 @@ final class Controller extends AbstractController
 {
     private FetchData $metrika;
 
+
     /**
-     * @throws NotSupported
      * @throws DependencyException
      * @throws NotFoundException
      */
