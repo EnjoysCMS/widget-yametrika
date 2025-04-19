@@ -6,6 +6,7 @@
         ]
     },
     "symlink": {
-        "node_modules": "/modules/widget-yametrika/node_modules"
+        "node_modules": "/modules/widget-yametrika/node_modules",
+        "assets": "/modules/widget-yametrika/assets"
     }
 }
