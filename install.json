@@ -8,5 +8,9 @@
     "symlink": {
         "node_modules": "/modules/widget-yametrika/node_modules",
         "assets": "/modules/widget-yametrika/assets"
+    },
+    "env": {
+        "YA_METRIKA_TOKEN": null,
+        "YA_METRIKA_COUNTER_ID": null
     }
 }
