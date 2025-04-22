@@ -10,7 +10,7 @@
         "assets": "/modules/widget-yametrika/assets"
     },
     "env": {
-        "YA_METRIKA_TOKEN": null,
-        "YA_METRIKA_COUNTER_ID": null
+        "YA_METRIKA_TOKEN": "",
+        "YA_METRIKA_COUNTER_ID": ""
     }
 }
